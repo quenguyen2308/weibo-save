@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">WeiboSave</string>
+
+    <!-- Home -->
+    <string name="home_url_label">Weibo URL</string>
+    <string name="home_url_placeholder">https://weibo.com/…</string>
+    <string name="home_clipboard_title">Weibo link detected</string>
+    <string name="home_clipboard_dismiss">Dismiss</string>
+    <string name="home_clipboard_use">Use</string>
+    <string name="home_index_label">Photo numbers (optional)</string>
+    <string name="home_index_placeholder">e.g. 1,4,7 or 2,5-8</string>
+    <string name="home_action_view">View &amp; Download</string>
+    <string name="cd_paste">Paste</string>
+    <string name="cd_clear">Clear</string>
+
+    <!-- Errors -->
+    <string name="error_invalid_url">Invalid Weibo URL</string>
+    <string name="error_no_images">No images found</string>
+    <string name="error_network">Connection error: %1$s</string>
+    <string name="error_url_not_found">URL not found</string>
+    <string name="error_download_failed">Download failed</string>
+
+    <!-- Album -->
+    <string name="album_loading">Loading…</string>
+    <string name="album_photo_count">%1$d photos</string>
+    <string name="album_selected_count">Selected %1$d</string>
+    <string name="album_select_photos">Select photos</string>
+    <string name="album_back">Back</string>
+    <string name="album_cancel_selection">Cancel</string>
+    <string name="album_deselect_all">Deselect all</string>
+    <string name="album_select_all">Select all photos</string>
+    <string name="album_photo_label">Photo %1$d</string>
+    <string name="album_photo_counter">%1$d / %2$d</string>
+    <string name="album_download_selected">Download selected (%1$d)</string>
+    <string name="album_download_all">Download all %1$d photos</string>
+    <string name="album_close">Close</string>
+
+    <!-- Download screen -->
+    <string name="download_running">Downloading %1$d/%2$d</string>
+    <string name="download_done_title">Done %1$d/%2$d</string>
+    <string name="download_subtitle">Probing CDN · 8 photos/batch</string>
+    <string name="download_back">Back</string>
+    <string name="download_saved_summary">Saved %1$d photos to Pictures/WeiboSave</string>
+    <string name="download_total">Total: %1$s</string>
+    <string name="download_state_pending">Waiting…</string>
+    <string name="download_state_probing">Probing CDN…</string>
+
+    <!-- Notifications -->
+    <string name="notif_channel_name">Photo downloads</string>
+    <string name="notif_downloading">WeiboSave — Downloading %1$d/%2$d photos</string>
+    <string name="notif_done_title">WeiboSave — Done</string>
+    <string name="notif_processing">Processing…</string>
+    <string name="notif_saved">Saved %1$d photos to Pictures/WeiboSave</string>
+</resources>

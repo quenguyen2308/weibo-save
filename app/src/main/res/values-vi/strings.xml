@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">WeiboSave</string>
+
+    <!-- Home -->
+    <string name="home_url_label">Weibo URL</string>
+    <string name="home_url_placeholder">https://weibo.com/…</string>
+    <string name="home_clipboard_title">Phát hiện link Weibo</string>
+    <string name="home_clipboard_dismiss">Bỏ</string>
+    <string name="home_clipboard_use">Dùng</string>
+    <string name="home_index_label">Số thứ tự ảnh (tuỳ chọn)</string>
+    <string name="home_index_placeholder">vd. 1,4,7 hoặc 2,5-8</string>
+    <string name="home_action_view">Xem ảnh &amp; Tải xuống</string>
+    <string name="cd_paste">Dán</string>
+    <string name="cd_clear">Xóa</string>
+
+    <!-- Errors -->
+    <string name="error_invalid_url">URL Weibo không hợp lệ</string>
+    <string name="error_no_images">Không tìm thấy ảnh nào</string>
+    <string name="error_network">Lỗi kết nối: %1$s</string>
+    <string name="error_url_not_found">Không tìm thấy URL</string>
+    <string name="error_download_failed">Tải thất bại</string>
+
+    <!-- Album -->
+    <string name="album_loading">Đang tải…</string>
+    <string name="album_photo_count">%1$d ảnh</string>
+    <string name="album_selected_count">Đã chọn %1$d</string>
+    <string name="album_select_photos">Chọn ảnh</string>
+    <string name="album_back">Quay lại</string>
+    <string name="album_cancel_selection">Hủy chọn</string>
+    <string name="album_deselect_all">Bỏ chọn</string>
+    <string name="album_select_all">Chọn tất cả</string>
+    <string name="album_photo_label">Ảnh %1$d</string>
+    <string name="album_photo_counter">%1$d / %2$d</string>
+    <string name="album_download_selected">Tải ảnh đã chọn (%1$d)</string>
+    <string name="album_download_all">Tải tất cả %1$d ảnh</string>
+    <string name="album_close">Đóng</string>
+
+    <!-- Download screen -->
+    <string name="download_running">Đang tải %1$d/%2$d ảnh</string>
+    <string name="download_done_title">Hoàn tất %1$d/%2$d ảnh</string>
+    <string name="download_subtitle">Probe CDN · chunk 8 ảnh/đợt</string>
+    <string name="download_back">Quay lại</string>
+    <string name="download_saved_summary">Đã lưu %1$d ảnh vào Pictures/WeiboSave</string>
+    <string name="download_total">Tổng: %1$s</string>
+    <string name="download_state_pending">Chờ xử lý…</string>
+    <string name="download_state_probing">Đang probe CDN…</string>
+
+    <!-- Notifications -->
+    <string name="notif_channel_name">Tải ảnh Weibo</string>
+    <string name="notif_downloading">WeiboSave — Đang tải %1$d/%2$d ảnh</string>
+    <string name="notif_done_title">WeiboSave — Hoàn tất</string>
+    <string name="notif_processing">Đang xử lý…</string>
+    <string name="notif_saved">Đã lưu %1$d ảnh vào Pictures/WeiboSave</string>
+</resources>
