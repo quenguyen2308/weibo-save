@@ -104,7 +104,7 @@ class AlbumViewModel : ViewModel() {
 
     fun selectAll() {
         val pics = (_uiState.value.loadState as? AlbumLoadState.Success)?.pics ?: return
-        _uiState.value = _uiState.value.copy(selected = pics.indices.toSet())
+        _uiState.value = _uiState.value.copy(selectionMode = true, selected = pics.indices.toSet())
     }
 
     fun clearSelection() {

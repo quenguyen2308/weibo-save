@@ -37,6 +37,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -72,6 +73,7 @@ fun AlbumScreen(
     val pics = (uiState.loadState as? AlbumLoadState.Success)?.pics ?: emptyList()
     val selectedCount = uiState.selected.size
     val selectionMode = uiState.selectionMode
+    val allSelected = pics.isNotEmpty() && selectedCount == pics.size
 
     uiState.previewIndex?.let { index ->
         if (pics.isNotEmpty()) {
@@ -83,16 +85,24 @@ fun AlbumScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Text(
-                        when {
-                            selectionMode && selectedCount > 0 ->
-                                stringResource(R.string.album_selected_count, selectedCount)
-                            selectionMode -> stringResource(R.string.album_select_photos)
-                            pics.isEmpty() -> stringResource(R.string.album_loading)
-                            else -> stringResource(R.string.album_photo_count, pics.size)
-                        },
-                        fontWeight = FontWeight.Bold,
-                    )
+                    Column {
+                        Text(
+                            when (val state = uiState.loadState) {
+                                is AlbumLoadState.Loading -> stringResource(R.string.album_loading)
+                                is AlbumLoadState.Success -> stringResource(R.string.album_photo_count, state.pics.size)
+                                is AlbumLoadState.Error -> stringResource(R.string.album_loading)
+                            },
+                            fontWeight = FontWeight.Bold,
+                        )
+                        if (uiState.postId.isNotEmpty()) {
+                            Text(
+                                uiState.postId,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 1,
+                            )
+                        }
+                    }
                 },
                 navigationIcon = {
                     IconButton(onClick = { if (selectionMode) vm.clearSelection() else onBack() }) {
@@ -105,8 +115,7 @@ fun AlbumScreen(
                     }
                 },
                 actions = {
-                    if (selectionMode && pics.isNotEmpty()) {
-                        val allSelected = selectedCount == pics.size
+                    if (pics.isNotEmpty()) {
                         IconButton(onClick = {
                             if (allSelected) vm.clearSelection() else vm.selectAll()
                         }) {
@@ -134,7 +143,7 @@ fun AlbumScreen(
                             }
                         }
                     }
-                }
+                },
             )
         },
         bottomBar = {
@@ -154,36 +163,56 @@ fun AlbumScreen(
                     },
                 )
             }
-        }
+        },
     ) { padding ->
-        Box(
-            modifier = Modifier.fillMaxSize().padding(padding),
-            contentAlignment = Alignment.Center,
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding),
         ) {
-            when (val state = uiState.loadState) {
-                is AlbumLoadState.Loading -> CircularProgressIndicator()
-                is AlbumLoadState.Error -> Text(
-                    text = state.arg?.let { stringResource(state.resId, it) }
-                        ?: stringResource(state.resId),
-                    color = MaterialTheme.colorScheme.error,
-                )
-                is AlbumLoadState.Success -> {
-                    LazyVerticalGrid(
-                        columns = GridCells.Fixed(3),
-                        modifier = Modifier.fillMaxSize(),
-                        horizontalArrangement = Arrangement.spacedBy(2.dp),
-                        verticalArrangement = Arrangement.spacedBy(2.dp),
-                    ) {
-                        itemsIndexed(state.pics) { index, pic ->
-                            ThumbCell(
-                                pic = pic,
-                                index = index,
-                                selectionMode = selectionMode,
-                                isSelected = index in uiState.selected,
-                                sizeBytes = uiState.picSizes[index],
-                                onClick = { vm.onImageClick(index) },
-                                onLongClick = { vm.onImageLongPress(index) },
-                            )
+            if (selectionMode) {
+                Surface(color = MaterialTheme.colorScheme.surfaceVariant) {
+                    Text(
+                        stringResource(R.string.album_selected_count, selectedCount),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 14.dp, vertical = 8.dp),
+                        style = MaterialTheme.typography.bodySmall,
+                        fontWeight = FontWeight.Bold,
+                    )
+                }
+            }
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
+                contentAlignment = Alignment.Center,
+            ) {
+                when (val state = uiState.loadState) {
+                    is AlbumLoadState.Loading -> CircularProgressIndicator()
+                    is AlbumLoadState.Error -> Text(
+                        text = state.arg?.let { stringResource(state.resId, it) }
+                            ?: stringResource(state.resId),
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                    is AlbumLoadState.Success -> {
+                        LazyVerticalGrid(
+                            columns = GridCells.Fixed(3),
+                            modifier = Modifier.fillMaxSize(),
+                            horizontalArrangement = Arrangement.spacedBy(2.dp),
+                            verticalArrangement = Arrangement.spacedBy(2.dp),
+                        ) {
+                            itemsIndexed(state.pics) { index, pic ->
+                                ThumbCell(
+                                    pic = pic,
+                                    index = index,
+                                    selectionMode = selectionMode,
+                                    isSelected = index in uiState.selected,
+                                    sizeBytes = uiState.picSizes[index],
+                                    onClick = { vm.onImageClick(index) },
+                                    onLongClick = { vm.onImageLongPress(index) },
+                                )
+                            }
                         }
                     }
                 }
@@ -191,6 +220,7 @@ fun AlbumScreen(
         }
     }
 }
+
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -214,11 +244,9 @@ private fun ThumbCell(
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop,
         )
-        // Subtle dark overlay when selected (matches gallery app dimming)
         if (selectionMode && isSelected) {
-            Box(modifier = Modifier.fillMaxSize().background(Color(0x33000000)))
+            Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.primary.copy(alpha = 0.45f)))
         }
-        // Gallery-style circle indicator: ring when unselected, filled+check when selected
         if (selectionMode) {
             Box(
                 modifier = Modifier
@@ -243,7 +271,6 @@ private fun ThumbCell(
                 }
             }
         }
-        // Index badge — bottom left
         Box(
             modifier = Modifier
                 .align(Alignment.BottomStart)
@@ -254,7 +281,6 @@ private fun ThumbCell(
         ) {
             Text("${index + 1}", style = MaterialTheme.typography.labelSmall, color = Color.White)
         }
-        // Size badge — bottom right (appears as probe completes)
         if (sizeBytes != null) {
             Box(
                 modifier = Modifier
@@ -329,15 +355,28 @@ private fun AlbumActionBar(
 ) {
     Surface(tonalElevation = 4.dp) {
         Column(
-            modifier = Modifier.navigationBarsPadding().padding(12.dp),
+            modifier = Modifier
+                .navigationBarsPadding()
+                .padding(horizontal = 12.dp, vertical = 10.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            if (selectionMode && selectedCount > 0) {
-                Button(onClick = onDownloadSelected, modifier = Modifier.fillMaxWidth()) {
-                    Text(stringResource(R.string.album_download_selected, selectedCount))
-                }
+            Button(
+                onClick = onDownloadSelected,
+                modifier = Modifier.fillMaxWidth(),
+                enabled = selectionMode && selectedCount > 0,
+                shape = RoundedCornerShape(10.dp),
+            ) {
+                Text(
+                    if (selectedCount > 0) stringResource(R.string.album_download_selected, selectedCount)
+                    else stringResource(R.string.album_download_selected, 0),
+                    fontWeight = FontWeight.Bold,
+                )
             }
-            OutlinedButton(onClick = onDownloadAll, modifier = Modifier.fillMaxWidth()) {
+            OutlinedButton(
+                onClick = onDownloadAll,
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(10.dp),
+            ) {
                 Text(stringResource(R.string.album_download_all, pics.size))
             }
         }
