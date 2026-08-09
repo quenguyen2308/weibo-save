@@ -2,17 +2,22 @@ package com.weibosave.ui.home
 
 import androidx.annotation.StringRes
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.weibosave.R
+import com.weibosave.data.UsageTracker
+import com.weibosave.data.WeiboRepository
 import com.weibosave.util.UrlExtractor
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
 data class HomeUiState(
     val urlInput: String = "",
     val indexInput: String = "",
     val clipboardUrl: String? = null,
     @StringRes val errorRes: Int? = null,
+    val isDirectDownloading: Boolean = false,
 )
 
 class HomeViewModel : ViewModel() {
@@ -66,5 +71,46 @@ class HomeViewModel : ViewModel() {
             _uiState.value = _uiState.value.copy(errorRes = R.string.error_invalid_url)
         }
         return postId
+    }
+
+    fun downloadDirectly(
+        onReady: (postId: String, pids: List<String>, thumbUrls: List<String>, indices: List<Int>) -> Unit,
+    ) {
+        val url = _uiState.value.urlInput.trim()
+        val postId = UrlExtractor.extractPostId(url) ?: run {
+            _uiState.value = _uiState.value.copy(errorRes = R.string.error_invalid_url)
+            return
+        }
+
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isDirectDownloading = true, errorRes = null)
+            try {
+                val sessionId = UsageTracker.startSession(postId)
+                val post = WeiboRepository.fetchPost(postId, sessionId)
+
+                if (post == null || post.pics.isEmpty()) {
+                    _uiState.value = _uiState.value.copy(
+                        isDirectDownloading = false,
+                        errorRes = R.string.error_no_images,
+                    )
+                    return@launch
+                }
+
+                val preIndices = parsedIndices()
+                val allPics = post.pics
+                val pics = if (preIndices.isEmpty()) allPics
+                           else allPics.filterIndexed { i, _ -> i in preIndices.toSet() }
+                                .takeIf { it.isNotEmpty() } ?: allPics
+
+                UsageTracker.setImageCount(sessionId, pics.size)
+                _uiState.value = _uiState.value.copy(isDirectDownloading = false)
+                onReady(postId, pics.map { it.pid }, pics.map { it.thumbUrl }, pics.indices.toList())
+            } catch (_: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    isDirectDownloading = false,
+                    errorRes = R.string.home_direct_download_failed,
+                )
+            }
+        }
     }
 }

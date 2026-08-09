@@ -8,6 +8,7 @@ import okhttp3.OkHttpClient
 object WeiboRepository {
 
     val client: OkHttpClient = OkHttpClient.Builder()
+        .addInterceptor(TrafficInterceptor())
         .followRedirects(true)
         .connectTimeout(15, java.util.concurrent.TimeUnit.SECONDS)
         .readTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
@@ -17,5 +18,6 @@ object WeiboRepository {
     val api = WeiboApi(client)
     val downloader = ImageDownloader(client)
 
-    suspend fun fetchPost(postId: String): PostData? = api.fetchPost(postId)
+    suspend fun fetchPost(postId: String, sessionId: String? = null): PostData? =
+        api.fetchPost(postId, sessionId)
 }

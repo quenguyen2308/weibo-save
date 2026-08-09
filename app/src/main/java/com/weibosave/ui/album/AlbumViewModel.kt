@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.weibosave.R
 import com.weibosave.data.ImageDownloader
+import com.weibosave.data.UsageTracker
 import com.weibosave.data.WeiboRepository
 import com.weibosave.model.PicItem
 import kotlinx.coroutines.async
@@ -34,14 +35,19 @@ class AlbumViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(AlbumUiState())
     val uiState: StateFlow<AlbumUiState> = _uiState.asStateFlow()
 
+    private var sessionId: String? = null
+
     fun load(postId: String, preIndices: List<Int> = emptyList()) {
         // Skip network call only when same postId AND no filter requested
         if (_uiState.value.postId == postId && preIndices.isEmpty()) return
         _uiState.value = AlbumUiState(postId = postId, loadState = AlbumLoadState.Loading)
 
+        val sid = UsageTracker.startSession(postId)
+        sessionId = sid
+
         viewModelScope.launch {
             try {
-                val post = WeiboRepository.fetchPost(postId)
+                val post = WeiboRepository.fetchPost(postId, sid)
                 if (post == null || post.pics.isEmpty()) {
                     _uiState.value = _uiState.value.copy(
                         loadState = AlbumLoadState.Error(R.string.error_no_images)
@@ -52,6 +58,7 @@ class AlbumViewModel : ViewModel() {
                 val pics = if (preIndices.isEmpty()) allPics
                            else allPics.filterIndexed { i, _ -> i in preIndices.toSet() }
                             .takeIf { it.isNotEmpty() } ?: allPics
+                UsageTracker.setImageCount(sid, pics.size)
                 _uiState.value = _uiState.value.copy(loadState = AlbumLoadState.Success(pics))
                 probeSizes(pics)
             } catch (e: Exception) {

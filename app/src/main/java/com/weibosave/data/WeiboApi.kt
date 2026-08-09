@@ -15,7 +15,7 @@ private const val TAG = "WeiboApi"
 // Port of get_pic_list() + _build_full_pic_list() from bot.py.
 class WeiboApi(private val client: OkHttpClient) {
 
-    suspend fun fetchPost(postId: String): PostData? = withContext(Dispatchers.IO) {
+    suspend fun fetchPost(postId: String, sessionId: String? = null): PostData? = withContext(Dispatchers.IO) {
         try {
             val request = Request.Builder()
                 .url("https://m.weibo.cn/statuses/show?id=$postId")
@@ -36,6 +36,10 @@ class WeiboApi(private val client: OkHttpClient) {
                     Log.e(TAG, "Empty body for postId=$postId")
                     return@withContext null
                 }
+            }
+
+            if (sessionId != null) {
+                UsageTracker.addApiBytes(sessionId, body.toByteArray(Charsets.UTF_8).size.toLong())
             }
 
             val root = JSONObject(body)

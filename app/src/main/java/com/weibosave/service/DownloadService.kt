@@ -9,6 +9,7 @@ import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import com.weibosave.R
 import com.weibosave.data.ImageDownloader.Companion.CHUNK_SIZE
+import com.weibosave.data.UsageTracker
 import com.weibosave.data.WeiboRepository
 import com.weibosave.model.DownloadItem
 import com.weibosave.model.DownloadState
@@ -26,6 +27,7 @@ class DownloadService : Service() {
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private var downloadJob: Job? = null
+    private var downloadPostId: String = ""
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -39,6 +41,7 @@ class DownloadService : Service() {
         val thumbUrls = intent.getStringArrayListExtra(EXTRA_THUMB_URLS) ?: ArrayList()
         val indices = intent.getIntegerArrayListExtra(EXTRA_INDICES)
             ?: ArrayList((pids.indices).toList())
+        downloadPostId = intent.getStringExtra(EXTRA_POST_ID) ?: ""
 
         val items = indices.map { i ->
             DownloadItem(
@@ -68,6 +71,7 @@ class DownloadService : Service() {
 
             updateNotification(doneCount, items.size, finished = true)
             DownloadStateHolder.setRunning(false)
+            UsageTracker.endDownloadSession(downloadPostId)
             stopSelf()
         }
 
@@ -97,8 +101,10 @@ class DownloadService : Service() {
         val filename = WeiboRepository.downloader.getFilenameFromUrl(url)
         MediaStoreHelper.saveImage(this, bytes, filename)
 
-        val doneState = DownloadState.Done(url, bytes.size.toLong())
+        val byteCount = bytes.size.toLong()
+        val doneState = DownloadState.Done(url, byteCount)
         DownloadStateHolder.updateItem(item.copy(state = doneState))
+        UsageTracker.addDownloadBytes(downloadPostId, byteCount)
         onDone(DownloadStateHolder.items.value.count { it.state is DownloadState.Done })
     }
 

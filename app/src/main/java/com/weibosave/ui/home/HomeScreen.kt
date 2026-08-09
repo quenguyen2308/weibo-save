@@ -18,14 +18,18 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.ContentPaste
+import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -53,6 +57,8 @@ import com.weibosave.R
 @Composable
 fun HomeScreen(
     onNavigateToAlbum: (postId: String, indices: List<Int>) -> Unit,
+    onNavigateToStats: () -> Unit = {},
+    onStartDownload: (postId: String, pids: List<String>, thumbUrls: List<String>, indices: List<Int>) -> Unit = { _, _, _, _ -> },
     vm: HomeViewModel = viewModel(),
 ) {
     val uiState by vm.uiState.collectAsState()
@@ -77,6 +83,14 @@ fun HomeScreen(
                             Text("W", color = Color.White, fontWeight = FontWeight.Black, fontSize = 14.sp)
                         }
                         Text(stringResource(R.string.app_name), fontWeight = FontWeight.Bold)
+                    }
+                },
+                actions = {
+                    IconButton(onClick = onNavigateToStats) {
+                        Icon(
+                            Icons.Default.BarChart,
+                            contentDescription = stringResource(R.string.stats_title),
+                        )
                     }
                 },
             )
@@ -120,7 +134,7 @@ fun HomeScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(50.dp),
-                    enabled = uiState.urlInput.isNotBlank(),
+                    enabled = uiState.urlInput.isNotBlank() && !uiState.isDirectDownloading,
                     shape = RoundedCornerShape(12.dp),
                 ) {
                     Text(
@@ -128,6 +142,47 @@ fun HomeScreen(
                         fontWeight = FontWeight.Bold,
                         fontSize = 14.sp,
                     )
+                }
+            }
+
+            item {
+                OutlinedButton(
+                    onClick = {
+                        vm.downloadDirectly { postId, pids, thumbUrls, indices ->
+                            onStartDownload(postId, pids, thumbUrls, indices)
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp),
+                    enabled = uiState.urlInput.isNotBlank() && !uiState.isDirectDownloading,
+                    shape = RoundedCornerShape(12.dp),
+                ) {
+                    if (uiState.isDirectDownloading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(16.dp),
+                            strokeWidth = 2.dp,
+                            color = MaterialTheme.colorScheme.primary,
+                        )
+                        Spacer(Modifier.size(8.dp))
+                        Text(
+                            stringResource(R.string.home_fetching),
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 14.sp,
+                        )
+                    } else {
+                        Icon(
+                            Icons.Default.FileDownload,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp),
+                        )
+                        Spacer(Modifier.size(6.dp))
+                        Text(
+                            stringResource(R.string.home_action_download),
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 14.sp,
+                        )
+                    }
                 }
             }
 

@@ -49,12 +49,14 @@ class ImageDownloader(private val client: OkHttpClient) {
 
     // GET full image bytes, retry up to 3 times with exponential backoff.
     // On 403 tries rotating CDN hosts before giving up.
+    // Requests are tagged with DownloadTag so TrafficInterceptor skips counting them
+    // (download bytes are tracked explicitly in DownloadService).
     suspend fun downloadImage(url: String, onProgress: ((Float) -> Unit)? = null): ByteArray? =
         withContext(Dispatchers.IO) {
             repeat(3) { attempt ->
                 try {
                     val resp = client.newCall(
-                        Request.Builder().url(url).applyImgHeaders().build()
+                        Request.Builder().url(url).tag(DownloadTag()).applyImgHeaders().build()
                     ).execute()
 
                     if (resp.isSuccessful) {
@@ -64,7 +66,7 @@ class ImageDownloader(private val client: OkHttpClient) {
                     if (resp.code == 403) {
                         val altUrl = rotateCdn(url) ?: return@withContext null
                         val resp2 = client.newCall(
-                            Request.Builder().url(altUrl).applyImgHeaders().build()
+                            Request.Builder().url(altUrl).tag(DownloadTag()).applyImgHeaders().build()
                         ).execute()
                         if (resp2.isSuccessful) return@withContext resp2.body?.bytes()
                     }

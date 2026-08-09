@@ -11,6 +11,9 @@
     <string name="home_index_label">Photo numbers (optional)</string>
     <string name="home_index_placeholder">e.g. 1,4,7 or 2,5-8</string>
     <string name="home_action_view">View &amp; Download</string>
+    <string name="home_action_download">Download Directly</string>
+    <string name="home_fetching">Fetching…</string>
+    <string name="home_direct_download_failed">Could not fetch post. Check connection.</string>
     <string name="cd_paste">Paste</string>
     <string name="cd_clear">Clear</string>
 
@@ -45,6 +48,34 @@
     <string name="download_total">Total: %1$s</string>
     <string name="download_state_pending">Waiting…</string>
     <string name="download_state_probing">Probing CDN…</string>
+
+    <!-- Download done dialog -->
+    <string name="downloading_wait">Downloading…</string>
+    <string name="done_dialog_title">Download complete</string>
+    <string name="done_dialog_ok">OK</string>
+
+    <!-- Stats screen -->
+    <string name="stats_title">Data Usage</string>
+    <string name="stats_back">Back</string>
+    <string name="stats_filter_today">Today</string>
+    <string name="stats_filter_week">This Week</string>
+    <string name="stats_filter_month">This Month</string>
+    <string name="stats_filter_all">All</string>
+    <string name="stats_total_data">Total: %1$s</string>
+    <string name="stats_total_sessions">%1$d sessions</string>
+    <string name="stats_api_label">API</string>
+    <string name="stats_view_label">View</string>
+    <string name="stats_download_label">DL</string>
+    <string name="stats_images">%1$d images</string>
+    <string name="stats_downloaded">%1$d downloaded</string>
+    <string name="stats_delete_week">Last 7 days</string>
+    <string name="stats_delete_month">Last 30 days</string>
+    <string name="stats_delete_all">Delete all</string>
+    <string name="stats_empty">No data recorded yet</string>
+    <string name="stats_delete_confirm_title">Delete history</string>
+    <string name="stats_delete_confirm_body">Delete "%1$s" history?</string>
+    <string name="stats_delete_confirm_ok">Delete</string>
+    <string name="stats_delete_confirm_cancel">Cancel</string>
 
     <!-- Notifications -->
     <string name="notif_channel_name">Photo downloads</string>

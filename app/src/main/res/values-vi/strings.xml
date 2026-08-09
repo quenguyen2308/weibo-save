@@ -11,6 +11,9 @@
     <string name="home_index_label">Số thứ tự ảnh (tuỳ chọn)</string>
     <string name="home_index_placeholder">vd. 1,4,7 hoặc 2,5-8</string>
     <string name="home_action_view">Xem ảnh &amp; Tải xuống</string>
+    <string name="home_action_download">Tải xuống trực tiếp</string>
+    <string name="home_fetching">Đang lấy dữ liệu…</string>
+    <string name="home_direct_download_failed">Không thể lấy dữ liệu bài viết. Kiểm tra kết nối.</string>
     <string name="cd_paste">Dán</string>
     <string name="cd_clear">Xóa</string>
 
@@ -45,6 +48,34 @@
     <string name="download_total">Tổng: %1$s</string>
     <string name="download_state_pending">Chờ xử lý…</string>
     <string name="download_state_probing">Đang probe CDN…</string>
+
+    <!-- Download done dialog -->
+    <string name="downloading_wait">Đang tải xuống…</string>
+    <string name="done_dialog_title">Tải xuống hoàn tất</string>
+    <string name="done_dialog_ok">OK</string>
+
+    <!-- Stats screen -->
+    <string name="stats_title">Thống kê dung lượng</string>
+    <string name="stats_back">Quay lại</string>
+    <string name="stats_filter_today">Hôm nay</string>
+    <string name="stats_filter_week">Tuần này</string>
+    <string name="stats_filter_month">Tháng này</string>
+    <string name="stats_filter_all">Tất cả</string>
+    <string name="stats_total_data">Tổng: %1$s</string>
+    <string name="stats_total_sessions">%1$d phiên</string>
+    <string name="stats_api_label">API</string>
+    <string name="stats_view_label">Xem</string>
+    <string name="stats_download_label">Tải</string>
+    <string name="stats_images">%1$d ảnh</string>
+    <string name="stats_downloaded">%1$d đã tải</string>
+    <string name="stats_delete_week">7 ngày qua</string>
+    <string name="stats_delete_month">30 ngày qua</string>
+    <string name="stats_delete_all">Xóa tất cả</string>
+    <string name="stats_empty">Chưa có dữ liệu</string>
+    <string name="stats_delete_confirm_title">Xóa lịch sử</string>
+    <string name="stats_delete_confirm_body">Xóa lịch sử "%1$s"?</string>
+    <string name="stats_delete_confirm_ok">Xóa</string>
+    <string name="stats_delete_confirm_cancel">Hủy</string>
 
     <!-- Notifications -->
     <string name="notif_channel_name">Tải ảnh Weibo</string>

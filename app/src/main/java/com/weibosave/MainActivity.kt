@@ -9,11 +9,39 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import androidx.navigation.NavType
@@ -21,10 +49,13 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.weibosave.model.DownloadState
 import com.weibosave.service.DownloadService
+import com.weibosave.service.DownloadStateHolder
 import com.weibosave.ui.album.AlbumScreen
 import com.weibosave.ui.download.DownloadScreen
 import com.weibosave.ui.home.HomeScreen
+import com.weibosave.ui.stats.StatsScreen
 import com.weibosave.ui.theme.WeiboSaveTheme
 import com.weibosave.util.UrlExtractor
 
@@ -100,16 +131,66 @@ private fun WeiboSaveApp(
     val navController = rememberNavController()
     val start = remember { if (startPostId != null) "album/$startPostId" else "home" }
 
-    androidx.compose.runtime.LaunchedEffect(navController) { onNavReady(navController) }
+    LaunchedEffect(navController) { onNavReady(navController) }
 
-    NavHost(navController = navController, startDestination = start) {
+    val isRunning by DownloadStateHolder.isRunning.collectAsState()
+    var showDoneDialog by remember { mutableStateOf(false) }
+    var doneCount by remember { mutableStateOf(0) }
+    LaunchedEffect(Unit) {
+        var wasRunning = false
+        DownloadStateHolder.isRunning.collect { running ->
+            if (wasRunning && !running) {
+                doneCount = DownloadStateHolder.items.value.count { it.state is DownloadState.Done }
+                showDoneDialog = true
+            }
+            wasRunning = running
+        }
+    }
+
+    if (showDoneDialog) {
+        Dialog(onDismissRequest = { showDoneDialog = false }) {
+            Surface(shape = RoundedCornerShape(16.dp), tonalElevation = 6.dp) {
+                Column(
+                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    Text(
+                        stringResource(R.string.done_dialog_title),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                    Text(
+                        stringResource(R.string.download_saved_summary, doneCount),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                        TextButton(onClick = { showDoneDialog = false }) {
+                            Text(stringResource(R.string.done_dialog_ok), fontSize = 14.sp)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        NavHost(navController = navController, startDestination = start) {
         composable("home") {
             HomeScreen(
                 onNavigateToAlbum = { postId, indices ->
                     val indicesArg = indices.joinToString(",")
                     navController.navigate("album/$postId?indices=$indicesArg")
-                }
+                },
+                onNavigateToStats = { navController.navigate("stats") },
+                onStartDownload = { postId, pids, thumbUrls, indices ->
+                    onStartDownload(postId, pids, thumbUrls, indices)
+                },
             )
+        }
+
+        composable("stats") {
+            StatsScreen(onBack = { navController.popBackStack() })
         }
 
         composable(
@@ -131,13 +212,44 @@ private fun WeiboSaveApp(
                 },
                 onStartDownload = { pids, thumbUrls, indices ->
                     onStartDownload(postId, pids, thumbUrls, indices)
-                    navController.navigate("download") { launchSingleTop = true }
                 },
             )
         }
 
         composable("download") {
             DownloadScreen(onBack = { navController.popBackStack() })
+        }
+        }
+
+        AnimatedVisibility(
+            visible = isRunning,
+            enter = fadeIn(),
+            exit = fadeOut(),
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.45f)),
+                contentAlignment = Alignment.Center,
+            ) {
+                Surface(
+                    shape = RoundedCornerShape(16.dp),
+                    tonalElevation = 8.dp,
+                ) {
+                    Column(
+                        modifier = Modifier.padding(horizontal = 40.dp, vertical = 32.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                    ) {
+                        CircularProgressIndicator()
+                        Text(
+                            stringResource(R.string.downloading_wait),
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Medium,
+                        )
+                    }
+                }
+            }
         }
     }
 }
