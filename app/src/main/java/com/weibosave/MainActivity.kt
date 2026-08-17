@@ -20,7 +20,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -57,6 +56,7 @@ import com.weibosave.ui.download.DownloadScreen
 import com.weibosave.ui.home.HomeScreen
 import com.weibosave.ui.stats.StatsScreen
 import com.weibosave.ui.theme.WeiboSaveTheme
+import com.weibosave.util.FolderPreference
 import com.weibosave.util.UrlExtractor
 
 class MainActivity : ComponentActivity() {
@@ -66,6 +66,18 @@ class MainActivity : ComponentActivity() {
     private val notifPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { /* granted or not, proceed — notification is nice-to-have */ }
+
+    private val folderPickerLauncher = registerForActivityResult(
+        ActivityResultContracts.OpenDocumentTree()
+    ) { uri ->
+        uri?.let {
+            contentResolver.takePersistableUriPermission(
+                it,
+                Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+            )
+            FolderPreference.setFolderUri(this, it.toString())
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -80,6 +92,7 @@ class MainActivity : ComponentActivity() {
                     startPostId = sharedPostId,
                     onNavReady = { navController = it },
                     onStartDownload = ::startDownload,
+                    onPickFolder = { folderPickerLauncher.launch(null) },
                     onFinish = ::finish,
                 )
             }
@@ -126,6 +139,7 @@ private fun WeiboSaveApp(
     startPostId: String?,
     onNavReady: (NavController) -> Unit,
     onStartDownload: (postId: String, pids: List<String>, thumbUrls: List<String>, indices: List<Int>) -> Unit,
+    onPickFolder: () -> Unit,
     onFinish: () -> Unit,
 ) {
     val navController = rememberNavController()
@@ -134,14 +148,20 @@ private fun WeiboSaveApp(
     LaunchedEffect(navController) { onNavReady(navController) }
 
     val isRunning by DownloadStateHolder.isRunning.collectAsState()
+    val suppressOverlay by DownloadStateHolder.suppressOverlay.collectAsState()
     var showDoneDialog by remember { mutableStateOf(false) }
     var doneCount by remember { mutableStateOf(0) }
     LaunchedEffect(Unit) {
         var wasRunning = false
         DownloadStateHolder.isRunning.collect { running ->
             if (wasRunning && !running) {
-                doneCount = DownloadStateHolder.items.value.count { it.state is DownloadState.Done }
-                showDoneDialog = true
+                val wasDirect = DownloadStateHolder.suppressOverlay.value
+                if (wasDirect) {
+                    DownloadStateHolder.setSuppressOverlay(false)
+                } else {
+                    doneCount = DownloadStateHolder.items.value.count { it.state is DownloadState.Done }
+                    showDoneDialog = true
+                }
             }
             wasRunning = running
         }
@@ -186,6 +206,7 @@ private fun WeiboSaveApp(
                 onStartDownload = { postId, pids, thumbUrls, indices ->
                     onStartDownload(postId, pids, thumbUrls, indices)
                 },
+                onPickFolder = onPickFolder,
             )
         }
 
@@ -222,7 +243,7 @@ private fun WeiboSaveApp(
         }
 
         AnimatedVisibility(
-            visible = isRunning,
+            visible = isRunning && !suppressOverlay,
             enter = fadeIn(),
             exit = fadeOut(),
         ) {

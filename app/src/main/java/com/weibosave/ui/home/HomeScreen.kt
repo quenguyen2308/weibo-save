@@ -6,7 +6,6 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,9 +21,11 @@ import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.ContentPaste
 import androidx.compose.material.icons.filled.FileDownload
-import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -35,9 +36,11 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -59,10 +62,12 @@ fun HomeScreen(
     onNavigateToAlbum: (postId: String, indices: List<Int>) -> Unit,
     onNavigateToStats: () -> Unit = {},
     onStartDownload: (postId: String, pids: List<String>, thumbUrls: List<String>, indices: List<Int>) -> Unit = { _, _, _, _ -> },
+    onPickFolder: () -> Unit = {},
     vm: HomeViewModel = viewModel(),
 ) {
     val uiState by vm.uiState.collectAsState()
     val clipboard = LocalClipboardManager.current
+    var showMenu by remember { mutableStateOf(false) }
 
     val accent = MaterialTheme.colorScheme.primary
 
@@ -91,6 +96,26 @@ fun HomeScreen(
                             Icons.Default.BarChart,
                             contentDescription = stringResource(R.string.stats_title),
                         )
+                    }
+                    Box {
+                        IconButton(onClick = { showMenu = true }) {
+                            Icon(
+                                Icons.Default.Settings,
+                                contentDescription = stringResource(R.string.home_settings),
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = showMenu,
+                            onDismissRequest = { showMenu = false },
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.home_menu_change_path)) },
+                                onClick = {
+                                    showMenu = false
+                                    onPickFolder()
+                                },
+                            )
+                        }
                     }
                 },
             )
@@ -134,7 +159,7 @@ fun HomeScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(50.dp),
-                    enabled = uiState.urlInput.isNotBlank() && !uiState.isDirectDownloading,
+                    enabled = uiState.urlInput.isNotBlank() && !uiState.isDirectDownloading && !uiState.isDirectDownloadingFiles,
                     shape = RoundedCornerShape(12.dp),
                 ) {
                     Text(
@@ -155,33 +180,49 @@ fun HomeScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(50.dp),
-                    enabled = uiState.urlInput.isNotBlank() && !uiState.isDirectDownloading,
+                    enabled = uiState.urlInput.isNotBlank() && !uiState.isDirectDownloading && !uiState.isDirectDownloadingFiles,
                     shape = RoundedCornerShape(12.dp),
                 ) {
-                    if (uiState.isDirectDownloading) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(16.dp),
-                            strokeWidth = 2.dp,
-                            color = MaterialTheme.colorScheme.primary,
-                        )
-                        Spacer(Modifier.size(8.dp))
-                        Text(
-                            stringResource(R.string.home_fetching),
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 14.sp,
-                        )
-                    } else {
-                        Icon(
-                            Icons.Default.FileDownload,
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp),
-                        )
-                        Spacer(Modifier.size(6.dp))
-                        Text(
-                            stringResource(R.string.home_action_download),
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 14.sp,
-                        )
+                    when {
+                        uiState.isDirectDownloading -> {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(16.dp),
+                                strokeWidth = 2.dp,
+                                color = MaterialTheme.colorScheme.primary,
+                            )
+                            Spacer(Modifier.size(8.dp))
+                            Text(
+                                stringResource(R.string.home_fetching),
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 14.sp,
+                            )
+                        }
+                        uiState.isDirectDownloadingFiles -> {
+                            Icon(
+                                Icons.Default.FileDownload,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp),
+                            )
+                            Spacer(Modifier.size(6.dp))
+                            Text(
+                                stringResource(R.string.home_downloading),
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 14.sp,
+                            )
+                        }
+                        else -> {
+                            Icon(
+                                Icons.Default.FileDownload,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp),
+                            )
+                            Spacer(Modifier.size(6.dp))
+                            Text(
+                                stringResource(R.string.home_action_download),
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 14.sp,
+                            )
+                        }
                     }
                 }
             }

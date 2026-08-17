@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.weibosave.R
 import com.weibosave.data.UsageTracker
 import com.weibosave.data.WeiboRepository
+import com.weibosave.service.DownloadStateHolder
 import com.weibosave.util.UrlExtractor
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -18,12 +19,25 @@ data class HomeUiState(
     val clipboardUrl: String? = null,
     @StringRes val errorRes: Int? = null,
     val isDirectDownloading: Boolean = false,
+    val isDirectDownloadingFiles: Boolean = false,
 )
 
 class HomeViewModel : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            var wasRunning = DownloadStateHolder.isRunning.value
+            DownloadStateHolder.isRunning.collect { running ->
+                if (wasRunning && !running && _uiState.value.isDirectDownloadingFiles) {
+                    _uiState.value = _uiState.value.copy(isDirectDownloadingFiles = false)
+                }
+                wasRunning = running
+            }
+        }
+    }
 
     fun onUrlChange(url: String) {
         _uiState.value = _uiState.value.copy(urlInput = url, errorRes = null)
@@ -103,7 +117,11 @@ class HomeViewModel : ViewModel() {
                                 .takeIf { it.isNotEmpty() } ?: allPics
 
                 UsageTracker.setImageCount(sessionId, pics.size)
-                _uiState.value = _uiState.value.copy(isDirectDownloading = false)
+                DownloadStateHolder.setSuppressOverlay(true)
+                _uiState.value = _uiState.value.copy(
+                    isDirectDownloading = false,
+                    isDirectDownloadingFiles = true,
+                )
                 onReady(postId, pics.map { it.pid }, pics.map { it.thumbUrl }, pics.indices.toList())
             } catch (_: Exception) {
                 _uiState.value = _uiState.value.copy(

@@ -13,7 +13,10 @@
     <string name="home_action_view">Xem ảnh &amp; Tải xuống</string>
     <string name="home_action_download">Tải xuống trực tiếp</string>
     <string name="home_fetching">Đang lấy dữ liệu…</string>
+    <string name="home_downloading">Đang tải xuống…</string>
     <string name="home_direct_download_failed">Không thể lấy dữ liệu bài viết. Kiểm tra kết nối.</string>
+    <string name="home_settings">Cài đặt</string>
+    <string name="home_menu_change_path">Đổi thư mục lưu</string>
     <string name="cd_paste">Dán</string>
     <string name="cd_clear">Xóa</string>
 

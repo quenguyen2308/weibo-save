@@ -15,6 +15,9 @@ object DownloadStateHolder {
     private val _isRunning = MutableStateFlow(false)
     val isRunning: StateFlow<Boolean> = _isRunning.asStateFlow()
 
+    private val _suppressOverlay = MutableStateFlow(false)
+    val suppressOverlay: StateFlow<Boolean> = _suppressOverlay.asStateFlow()
+
     fun setItems(items: List<DownloadItem>) { _items.value = items }
 
     fun updateItem(updated: DownloadItem) {
@@ -22,4 +25,6 @@ object DownloadStateHolder {
     }
 
     fun setRunning(running: Boolean) { _isRunning.value = running }
+
+    fun setSuppressOverlay(suppress: Boolean) { _suppressOverlay.value = suppress }
 }

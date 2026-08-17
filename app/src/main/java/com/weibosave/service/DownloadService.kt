@@ -13,6 +13,7 @@ import com.weibosave.data.UsageTracker
 import com.weibosave.data.WeiboRepository
 import com.weibosave.model.DownloadItem
 import com.weibosave.model.DownloadState
+import com.weibosave.util.FolderPreference
 import com.weibosave.util.MediaStoreHelper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -28,6 +29,7 @@ class DownloadService : Service() {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private var downloadJob: Job? = null
     private var downloadPostId: String = ""
+    private var safFolderUri: String? = null
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -42,6 +44,7 @@ class DownloadService : Service() {
         val indices = intent.getIntegerArrayListExtra(EXTRA_INDICES)
             ?: ArrayList((pids.indices).toList())
         downloadPostId = intent.getStringExtra(EXTRA_POST_ID) ?: ""
+        safFolderUri = FolderPreference.getFolderUri(this)
 
         val items = indices.map { i ->
             DownloadItem(
@@ -99,7 +102,7 @@ class DownloadService : Service() {
         }
 
         val filename = WeiboRepository.downloader.getFilenameFromUrl(url)
-        MediaStoreHelper.saveImage(this, bytes, filename)
+        MediaStoreHelper.saveImage(this, bytes, filename, safFolderUri)
 
         val byteCount = bytes.size.toLong()
         val doneState = DownloadState.Done(url, byteCount)

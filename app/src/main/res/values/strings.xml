@@ -13,7 +13,10 @@
     <string name="home_action_view">View &amp; Download</string>
     <string name="home_action_download">Download Directly</string>
     <string name="home_fetching">Fetching…</string>
+    <string name="home_downloading">Downloading…</string>
     <string name="home_direct_download_failed">Could not fetch post. Check connection.</string>
+    <string name="home_settings">Settings</string>
+    <string name="home_menu_change_path">Change save path</string>
     <string name="cd_paste">Paste</string>
     <string name="cd_clear">Clear</string>
 
