@@ -73,7 +73,7 @@
     <string name="stats_downloaded">%1$d downloaded</string>
     <string name="stats_delete_week">Last 7 days</string>
     <string name="stats_delete_month">Last 30 days</string>
-    <string name="stats_delete_all">Delete all</string>
+    <string name="stats_delete_all">All</string>
     <string name="stats_empty">No data recorded yet</string>
     <string name="stats_delete_confirm_title">Delete history</string>
     <string name="stats_delete_confirm_body">Delete "%1$s" history?</string>

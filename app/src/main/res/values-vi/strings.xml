@@ -73,7 +73,7 @@
     <string name="stats_downloaded">%1$d đã tải</string>
     <string name="stats_delete_week">7 ngày qua</string>
     <string name="stats_delete_month">30 ngày qua</string>
-    <string name="stats_delete_all">Xóa tất cả</string>
+    <string name="stats_delete_all">Tất cả</string>
     <string name="stats_empty">Chưa có dữ liệu</string>
     <string name="stats_delete_confirm_title">Xóa lịch sử</string>
     <string name="stats_delete_confirm_body">Xóa lịch sử "%1$s"?</string>
